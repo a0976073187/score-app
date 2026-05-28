@@ -19,7 +19,6 @@ st.set_page_config(
 DB_FILE = "score_records.csv"
 
 # ==================== 🎒 學生名單與年級設定區 ====================
-# 💡 已更新為您提供的 10 位五年級學生名單
 STUDENT_LIST = {
     "李星呈": "五年級", 
     "魏靖芸": "五年級", 
@@ -35,7 +34,7 @@ STUDENT_LIST = {
 
 GRADE_ORDER = {"一年級": 1, "二年級": 2, "三年級": 3, "四年級": 4, "五年級": 5, "六年級": 6, "未知名級": 7}
 
-sorted_students_info = sorted(STUDENT_LIST.items(), key=lambda x: (GRADE_ORDER.get(x[1], 99), x[0]))
+sorted_students_info = sorted(STUDENT_LIST.items(), key=lambda x: (GRADE_ORDER.get(x, 99), x))
 name_list_by_grade = [f"[{grade}] {name}" for name, grade in sorted_students_info]
 # ================================================================
 
@@ -67,7 +66,6 @@ if page == "📝 登記學生成績":
     st.title("📝 學生成績登記系統")
     st.write("請在下方輸入測驗成績資訊：")
     
-    # 自動鎖定上次填寫的資訊
     if "last_score_date" not in st.session_state: st.session_state["last_score_date"] = datetime.now()
     if "last_exam_type" not in st.session_state: st.session_state["last_exam_type"] = "平時考"
     if "last_subject" not in st.session_state: st.session_state["last_subject"] = "數學"
@@ -116,7 +114,7 @@ elif page == "📊 成績分析與趨勢圖表":
             pure_students = sorted(list(STUDENT_LIST.keys()))
             search_name = st.selectbox("🔍 選擇查詢學生", pure_students)
         with col2:
-            search_subject = st.selectbox("📚 選擇查詢科目", ["數學", "國文", "英文", "自然", "社會", "其他"])
+            search_subject = st.selectbox("📚 選擇查詢科目", ["數學", "國文", "英文", "自然", "社會", "開他"])
             
         chart_df = df[(df["姓名"] == search_name) & (df["科目"] == search_subject)].sort_values(by="日期")
         
@@ -139,7 +137,6 @@ elif page == "📊 成績分析與趨勢圖表":
         df_sorted_time = df.sort_values(by="日期")
         latest_records = []
         for (name, sub), sub_df in df_sorted_time.groupby(["姓名", "科目"]):
-            # 如果名字不在新的名單裡，就不顯示（防舊資料干擾）
             if name not in STUDENT_LIST:
                 continue
             if len(sub_df) >= 1:
@@ -203,7 +200,8 @@ elif page == "⚙️ 管理歷史成績":
         selected_option = st.selectbox("請選擇一筆您想要修改或刪除的成績：", record_options)
         
         if selected_option:
-            selected_index = int(selected_option.split(": ")[0].replace("編號 ", ""))
+            # 💡 關鍵修復點：精確拆解字串，抓取第一個冒號前的編號數字
+            selected_index = int(selected_option.split(":")[0].replace("編號 ", ""))
             current_row = df.loc[selected_index]
             
             st.markdown("---")
@@ -230,3 +228,4 @@ elif page == "⚙️ 管理歷史成績":
                         st.error("❌ 請選擇學生姓名！")
                     else:
                         pure_edit_name = edit_selected.split("] ")[1]
+                        df.at[selected_index, "日期"] = pd.to_datetime(edit_date)
