@@ -114,7 +114,7 @@ elif page == "📊 成績分析與趨勢圖表":
             pure_students = sorted(list(STUDENT_LIST.keys()))
             search_name = st.selectbox("🔍 選擇查詢學生", pure_students)
         with col2:
-            search_subject = st.selectbox("📚 選擇查詢科目", ["數學", "國文", "英文", "自然", "社會", "開他"])
+            search_subject = st.selectbox("📚 選擇查詢科目", ["數學", "國文", "英文", "自然", "社會", "其他"])
             
         chart_df = df[(df["姓名"] == search_name) & (df["科目"] == search_subject)].sort_values(by="日期")
         
@@ -200,8 +200,9 @@ elif page == "⚙️ 管理歷史成績":
         selected_option = st.selectbox("請選擇一筆您想要修改或刪除的成績：", record_options)
         
         if selected_option:
-            # 💡 關鍵修復點：精確拆解字串，抓取第一個冒號前的編號數字
-            selected_index = int(selected_option.split(":")[0].replace("編號 ", ""))
+            # 💡 核心修復點：先用 split 拆開，取出前半段「編號 X」，再用 replace 把中文字拿掉
+            first_part = selected_option.split(":")[0]
+            selected_index = int(first_part.replace("編號 ", ""))
             current_row = df.loc[selected_index]
             
             st.markdown("---")
@@ -228,4 +229,3 @@ elif page == "⚙️ 管理歷史成績":
                         st.error("❌ 請選擇學生姓名！")
                     else:
                         pure_edit_name = edit_selected.split("] ")[1]
-                        df.at[selected_index, "日期"] = pd.to_datetime(edit_date)
