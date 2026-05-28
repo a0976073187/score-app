@@ -9,7 +9,7 @@ LOGO_IMAGE = "logo.png"  # 如果有放 Fun Learning 圖片在同資料夾，會
 has_logo = os.path.exists(LOGO_IMAGE)
 
 st.set_page_config(
-    page_title="學生成績登記與追蹤系統",
+    page_title="學生成績登記與追蹤",
     page_icon="📈",
     layout="centered"
 )
